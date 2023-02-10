@@ -59,8 +59,16 @@ promise.then((result)=>{
 const promise2 = new Promise((resolve,reject)=>{
     resolve("哈哈")//??为为什么可以打印出{"哈哈"}
 })
-console.log(promise2);//Promise { '哈哈' }
+// console.log(promise2);//Promise { '哈哈' }
 
 //（10）Promise中维护了两个隐藏属性：PromiseResult存储数据和PromiseState记录Promise的状态：pending进行中、fulfilled完成、rejected拒绝/出错了
 //（11）PromiseState：pending进行中、fulfilled完成：通过resolved储存数据、rejected拒绝/出错了：出错了或通过reject存储数据
 //（12）注意：PromiseState只可修改一次，修改后永远不会发生改变
+//（13）流程：当Promise创建时，PromiseState初始值为pending；
+//当通过resolve存储数据时，PromiseState变为fulfilled(完成),PromiseResult变为存储的数据
+//当通过reject存储数据或出错时，PromiseState变为rejected拒绝/出错了，PromiseResult变为存储的数据或异常对象
+promise2.then(result=>{
+    console.log(result);
+},reason=>{
+    console.log("出错了~~");
+})
