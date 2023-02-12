@@ -38,21 +38,27 @@ class MyPromise {
         #reject(reason){ }//私有方法：存储错误的数据
         //添加读取数据的then方法
         then(onFulfilled,onRejected){
-            if(this.#state === PROMISE_STATE.PENDING){
-                //进入判断说明数据还没有进入Promise，将回调函数设置为callback的值
-                // this.#callback = onFulfilled
-                this.#callbacks.push(()=>{
-                    onFulfilled(this.#result)
-                })
-            }
-            if(this.#state === PROMISE_STATE.FULFILLED){
-                /*问题：then只能读取已经存储到Promise的数据，不能读取异步读取的数据 */
-                // onFulfilled(this.#result)
-                /*then的回调函数应该放到微任务队列里执行，而不是直接调用 */
-                queueMicrotask(()=>{
-                    onFulfilled(this.#result)
-                })
-            }
+            //实现链式调用的功能
+            /*谁将成为then返回的新的Promise中的数据？
+            then中回调函数的返回值会成为新的Promise的数据 */
+            return new MyPromise((resolve,reject)=>{
+                if(this.#state === PROMISE_STATE.PENDING){
+                    //进入判断说明数据还没有进入Promise，将回调函数设置为callback的值
+                    // this.#callback = onFulfilled
+                    this.#callbacks.push(()=>{
+                        onFulfilled(this.#result)
+                    })
+                }
+                if(this.#state === PROMISE_STATE.FULFILLED){
+                    /*问题：then只能读取已经存储到Promise的数据，不能读取异步读取的数据 */
+                    // onFulfilled(this.#result)
+                    /*then的回调函数应该放到微任务队列里执行，而不是直接调用 */
+                    queueMicrotask(()=>{
+                        resolve(onFulfilled(this.#result))
+                    })
+                }
+            
+            })
         }
 }
 
@@ -66,12 +72,13 @@ const mp = new MyPromise((resolve,reject)=>{//(resolve,reject)=>{ }实参
     
 })
 mp.then((result)=>{
-    console.log("读取数据1",result)
-})
-mp.then((result)=>{
-    console.log("读取数据2",result)
-})
-mp.then((result)=>{
-    console.log("读取数据3",result)
+    console.log("1",result)
+    return "1"
+}).then((result)=>{
+    console.log(result)
+    return "2"
+}).then((result)=>{
+    console.log(result)
+    return "3"
 })
 
