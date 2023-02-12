@@ -26,7 +26,9 @@ class MyPromise {
             this.#result = value
             this.#state = PROMISE_STATE.FULFILLED//数据填充成功
             //当reslove执行时，说明数据已经进来了，需要调用then的回调函数
-            this.#callback&&this.#callback(this.#result)
+            queueMicrotask(()=>{
+            this.#callback && this.#callback(this.#result)
+            })
         }
         #reject(reason){ }//私有方法：存储错误的数据
         //添加读取数据的then方法
@@ -37,7 +39,11 @@ class MyPromise {
             }
             if(this.#state === PROMISE_STATE.FULFILLED){
                 /*问题：then只能读取已经存储到Promise的数据，不能读取异步读取的数据 */
-                onFulfilled(this.#result)
+                // onFulfilled(this.#result)
+                /*then的回调函数应该放到微任务队列里执行，而不是直接调用 */
+                queueMicrotask(()=>{
+                    onFulfilled(this.#result)
+                })
             }
         }
 }
@@ -45,9 +51,9 @@ class MyPromise {
 const mp = new MyPromise((resolve,reject)=>{//(resolve,reject)=>{ }实参
     // console.log("回调函数执行了~~")//调用回调函数才会执行
     // resolve("孙悟空")//以函数形式调用
-    setTimeout(()=>{
+    
         resolve("孙悟空")
-    },1000)
+    
 })
 mp.then((result)=>{
     console.log("读取数据",result)
